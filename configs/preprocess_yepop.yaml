@@ -1,0 +1,17 @@
+dataset:
+  root_path: "/hdd/yhyun225/dataset/ye_pop"
+  size: 1024
+  center_crop: True
+  is_preprocessed: False
+  caption_model_type: "cogvlm" # ['cogvlm', 'llava']
+
+dataloader:
+    num_workers: ~
+    pin_memory: True
+    drop_last: False
+    persistent_workers: True
+    shuffle: False
+
+model:
+  pretrained_model_name_or_path: "stabilityai/stable-diffusion-3-medium-diffusers"
+  cache_dir: "/hdd/yhyun225/cache"

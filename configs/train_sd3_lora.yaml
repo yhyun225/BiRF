@@ -1,0 +1,40 @@
+dataset:
+  root_path: "/hdd/yhyun225/dataset/ye_pop"
+  size: 1024
+  center_crop: True
+  is_preprocessed: False
+  caption_model_type: "cogvlm" # ['cogvlm', 'llava']
+
+
+trainer:
+  dataloader:
+    num_workers: ~
+    pin_memory: True
+    drop_last: True
+    persistent_workers: True
+    shuffle: True
+
+  optimizer:
+    learning_rate: 1e-04
+    beta1: 0.9
+    beta2: 0.999
+    weight_decay: 1e-04
+    epsilon: 1e-08
+    lr_scheduler: "constant" # ["constant", "cosine", "cosine_with_restarts", "polynomial"]
+    lr_warmup_steps: 500
+    lr_num_cycles: 1
+    lr_power: 1.0
+
+  model:
+    pretrained_model_name_or_path: "stabilityai/stable-diffusion-3-medium-diffusers"
+    cache_dir: "/hdd/yhyun225/cache"
+    lora:
+      layers: ~
+      rank: 4
+      dropout: 0.0   
+
+  weighting_scheme: "logit_normal" # ["sigma_sqrt", "logit_normal", "mode", "cosmap"]
+  logit_mean: 0.0
+  logit_std: 1.0
+  mode_scale: 1.29
+  
