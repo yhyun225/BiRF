@@ -2,7 +2,7 @@ dataset:
   root_path: "/hdd/yhyun225/dataset/ye_pop"
   size: 1024
   center_crop: True
-  is_preprocessed: False
+  is_preprocessed: True
   caption_model_type: "cogvlm" # ['cogvlm', 'llava']
 
 

@@ -27,7 +27,8 @@ class YePopDataset(Dataset):
         self.total = 0
 
         if annotation_pt_path is not None:
-            self.dataset = torch.load(annotation_pt_path)
+            self.dataset = torch.load(annotation_pt_path, weights_only=True)
+            self.total = len(self.dataset)
         else:
             chunks = sorted(os.listdir(self.root_path))
             for i, chunk in tqdm(enumerate(chunks), total=len(chunks), desc='Loading data chunks...'):
@@ -54,22 +55,22 @@ class YePopDataset(Dataset):
 
                         if self.is_preprocessed:
                             if self.caption_model_type == 'cogvlm':
-                                prompt_emb_path = os.path.join(
+                                prompt_embed_path = os.path.join(
                                     *[self.root_path, chunk, 'cogvlm_text_emb', 'prompt_embed', image_id.zfill(9) + '.pt']
                                 )
-                                pooled_prompt_emb_path = os.path.join(
+                                pooled_prompt_embed_path = os.path.join(
                                     *[self.root_path, chunk, 'cogvlm_text_emb', 'pooled_prompt_embed', image_id.zfill(9) + '.pt']
                                 )
                             elif self.caption_model_type == 'llava':
-                                prompt_emb_path = os.path.join(
+                                prompt_embed_path = os.path.join(
                                     *[self.root_path, chunk, 'llava_text_emb', 'prompt_embed', image_id.zfill(9) + '.pt']
                                 )
-                                pooled_prompt_emb_path = os.path.join(
+                                pooled_prompt_embed_path = os.path.join(
                                     *[self.root_path, chunk, 'llava_text_emb', 'pooled_prompt_embed', image_id.zfill(9) + '.pt']
                                 )
                             info['text_embedding'] = {
-                                'prompt_embed_path': prompt_emb_path,
-                                'pooled_embed_path': pooled_prompt_emb_path,
+                                'prompt_embed_path': prompt_embed_path,
+                                'pooled_prompt_embed_path': pooled_prompt_embed_path,
                             }
                                 
                         self.dataset.append(info)
@@ -86,7 +87,7 @@ class YePopDataset(Dataset):
 
     def __str__(self):
         lines = []
-        lines.append(f'***** {self.__class__.__name__} *****)')
+        lines.append(f'{self.__class__.__name__}')
         lines.append(f'    - Data in annotation: {self.total}')
         lines.append(f'    - Total instances: {self._length}')
         lines.append(f'    - Missing instances: {self.total - self._length}')
@@ -108,9 +109,9 @@ class YePopDataset(Dataset):
 
         if self.is_preprocessed:
             # precomputed latents & text embeddings
-            pixel_values = torch.load(image_path)
-            prompt_emb = torch.load(data['text_embedding']['prompt_emb_path'])
-            pooled_prompt_emb = torch.load(data['text_embedding']['pooled_prompt_emb_path'])
+            pixel_values = torch.load(image_path, weights_only=True)
+            prompt_emb = torch.load(data['text_embedding']['prompt_embed_path'], weights_only=True)
+            pooled_prompt_emb = torch.load(data['text_embedding']['pooled_prompt_embed_path'], weights_only=True)
             text_prompt = {
                 'prompt_embeds': prompt_emb,
                 'pooled_prompt_embeds': pooled_prompt_emb

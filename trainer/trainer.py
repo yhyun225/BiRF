@@ -122,25 +122,19 @@ class Trainer(object):
         lines.append(f'  - FP16 mode: {self.mixed_precision == "fp16"}')
         return '\n'.join(lines)
     
-    def init_models(self, model_cfg, preconditioned=False):
+    def init_models(self, model_cfg):
         """
         Initilize models.
         NOTE: preconditioned refers to precomputed latents & text embeddings.
               If not precomputed, we should compute them inside the training loop.
         """
         pretrained_model_name_or_path = model_cfg.pretrained_model_name_or_path
-
-        self.vae = AutoencoderKL.from_pretrained(
-            pretrained_model_name_or_path, subfolder='vae',
-        )
         
         self.frozen_transformer = SD3Transformer2DModel.from_pretrained(
             pretrained_model_name_or_path, subfolder='transformer',
         )
-        
         self.transformer = copy.deepcopy(self.frozen_transformer)
-
-        self.vae.requires_grad_(False)
+        
         self.frozen_transformer.requires_grad_(False)
         self.transformer.requires_grad_(False)
 
@@ -172,12 +166,22 @@ class Trainer(object):
         )
         self.transformer.add_adapter(transformer_lora_config)
         
-
-        self.vae.to(self.device, self.weight_dtype)
         self.frozen_transformer.to(self.device, self.weight_dtype)
         self.transformer.to(self.device, self.weight_dtype)
 
-        if not preconditioned:
+        # Make sure the trainable params are in float32
+        if self.weight_dtype == torch.float16:
+            # only upcast trainable parameters (LoRA) into fp32
+            cast_training_params(self.transformer, dtype=torch.float32)
+
+        self.vae = AutoencoderKL.from_pretrained(
+                pretrained_model_name_or_path, subfolder='vae',
+            )
+        self.vae.requires_grad_(False)
+        self.vae.to(self.device, self.weight_dtype)
+
+        if not self.dataset.is_preprocessed:
+            # Tokenizer
             tokenizer_one = CLIPTokenizer.from_pretrained(
                 pretrained_model_name_or_path, subfolder='tokenizer', cache_dir=model_cfg.cache_dir,
             )
@@ -189,6 +193,8 @@ class Trainer(object):
             )
             self.tokenizers = [tokenizer_one, tokenizer_two, tokenizer_three]
 
+
+            # Text encoder
             text_encoder_one = CLIPTextModelWithProjection.from_pretrained(
                 pretrained_model_name_or_path, subfolder='text_encoder', torch_dtype=self.weight_dtype, cache_dir=model_cfg.cache_dir,
             ).to(self.device)
@@ -323,7 +329,7 @@ class Trainer(object):
                 models_to_accumulate = [self.transformer]
 
                 with self.accelerator.accumulate(models_to_accumulate):
-                    pixel_values = batch['pixel_values'].to(dtype=self.vae.dtype)
+                    pixel_values = batch['pixel_values'].to(dtype=self.weight_dtype)
                     text_prompts = batch['text_prompts']
                     # TODO: How about emptry string '' for CFG?
 
@@ -340,6 +346,7 @@ class Trainer(object):
                     model_input = (pixel_values - self.vae.config.shift_factor) * self.vae.config.scaling_factor
                     model_input = model_input.to(dtype=self.weight_dtype)
 
+                    # timestep: t
                     noise = torch.randn_like(model_input)
                     bsz = model_input.shape[0]
 
@@ -350,6 +357,7 @@ class Trainer(object):
                         logit_std=self.cfg.logit_std,
                         mode_scale=self.cfg.mode_scale
                     )
+                    
                     indices = (u * self.noise_scheduler.config.num_train_timesteps).long()
                     timesteps = self.noise_scheduler.timesteps[indices].to(device=self.device)
 
@@ -361,33 +369,57 @@ class Trainer(object):
                         device=model_input.device
                     )
                     noisy_model_input = (1.0 - sigmas) * model_input + sigmas * noise
+                    
+                    with torch.no_grad():
+                        model_pred = self.frozen_transformer(
+                            hidden_states=noisy_model_input,
+                            timestep=timesteps,
+                            encoder_hidden_states=prompt_embeds,
+                            pooled_projections=pooled_prompt_embeds,
+                            return_dict=False,
+                        )[0]
+                    
+                    # timestep: t + 1
+                    noise_next = torch.randn_like(model_input)
 
-                    model_pred = self.transformer(
-                        hidden_states=noisy_model_input,
-                        timestep=timesteps,
+                    indices_next = indices + 1
+                    timesteps_next = self.noise_scheduler.timesteps[indices_next].to(device=self.device)
+                    
+                    sigmas = get_sigmas(
+                        timesteps_next,
+                        self.noise_scheduler,
+                        n_dim=model_input.ndim, 
+                        dtype=model_input.dtype, 
+                        device=model_input.device
+                    )
+                    noisy_model_input_next = (1.0 - sigmas) * model_input + sigmas * noise_next
+
+                    model_pred_next = self.transformer(
+                        hidden_states=noisy_model_input_next,
+                        timestep=timesteps_next,
                         encoder_hidden_states=prompt_embeds,
                         pooled_projections=pooled_prompt_embeds,
                         return_dict=False,
                     )[0]
+                    
 
                     # precondition outputs - EDM
-                    model_pred = model_pred * (-sigmas) + noisy_model_input
-                    weighting = compute_loss_weighting_for_sd3(weighting_scheme=self.cfg.weighting_scheme, sigams=sigmas)
-
-                    target = model_input
+                    # model_pred = model_pred * (-sigmas) + noisy_model_input
+                    weighting = compute_loss_weighting_for_sd3(weighting_scheme=self.cfg.weighting_scheme, sigmas=sigmas)
 
                     loss = torch.mean(
-                        (weighting.float() * (model_pred.float() - target.float()) ** 2).reshape(target.shape[0], -1),
+                        (weighting.float() * (model_pred.float() - model_pred_next.float()) ** 2).reshape(model_pred.shape[0], -1),
                         1,
                     )
 
                     loss = loss.mean()
 
-                    self.accelerator.bacvkward(loss)
+                    self.accelerator.backward(loss)
                     if self.accelerator.sync_gradients:
-                        params_to_clip = (
-                            itertools.chain(self.transformer.parameters())
-                        )
+                        # params_to_clip = (
+                        #     itertools.chain(self.transformer.parameters())
+                        # )
+                        params_to_clip = [p for p in self.transformer.parameters() if p.requires_grad]
                         self.accelerator.clip_grad_norm_(params_to_clip, 1.0)
 
                     self.optimizer.step()

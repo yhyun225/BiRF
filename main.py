@@ -11,6 +11,7 @@ from accelerate.utils import DistributedDataParallelKwargs, ProjectConfiguration
 from trainer import Trainer
 from dataset import YePopDataset
 
+from huggingface_hub import whoami, login
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -102,4 +103,12 @@ def main():
     trainer.run()
 
 if __name__ == "__main__":
+    try:
+        user_info = whoami()
+        print(f"\n***** Huggingface-hub logged in as [{user_info['name']}].\n")
+    except:
+        print("Not logged in or invalid token")
+        print("Retry login...")
+        login()
+    
     main()
