@@ -1,11 +1,13 @@
 import os
 import logging
 import sys
+
+import time
 from datetime import datetime, timezone, timedelta
 
 from colorlog import ColoredFormatter
 
-def setup_logger(log_dir, log_filename='log.log', logger_name='ColorLogger'):
+def setup_logger(log_dir, log_filename='log.log', logger_name='mylogger'):
     class KoreaTimeFormatter(ColoredFormatter):
         def formatTime(self, record, datefmt=None):
             KST = timezone(timedelta(hours=9))
@@ -36,3 +38,9 @@ def setup_logger(log_dir, log_filename='log.log', logger_name='ColorLogger'):
     logger.propagate=False
 
     return logger
+
+def calculate_eta(iter_start_time, iter_end_time, step, max_steps):
+    avg_elapsed = (iter_end_time - iter_start_time) / step
+    eta_sec = avg_elapsed * (max_steps - step)
+
+    return time.strftime("%H:%M:%S", time.gmtime(eta_sec))

@@ -40,10 +40,12 @@ from transformers import CLIPTokenizer, T5TokenizerFast
 from transformers import CLIPTextModelWithProjection, T5EncoderModel
 
 from utils.encoding_utils import tokenize_prompt, encode_prompt 
+from utils.logger_utils import calculate_eta
 
 if is_wandb_available():
     import wandb
 
+logger = logging.getLogger('mylogger')
 
 class Trainer(object):
     def __init__(
@@ -113,8 +115,8 @@ class Trainer(object):
             )
 
         if self.is_master:
-            print('\n\nTrainer initialized.')
-            print(self)
+            logger.info('\n\nTrainer initialized.')
+            logger.info(self)
 
     def __str__(self):
         lines = []
@@ -275,14 +277,14 @@ class Trainer(object):
         NOTE: This function should be called by all processes
         """
         if self.is_master:
-            print(f'\nSampling {num_samples} images...', end='')
+            logger.info(f'\nSampling {num_samples} images...', end='')
 
         # Load sd3 pipeline & text descriptions and...
         #   1) w / o finetuning, sampling + inversion
         #   2) w/ finetuning, sampling + inversion
 
         if self.is_master:
-            print(' Done.')
+            logger.info(' Done.')
 
     def load(self):
         """
@@ -298,7 +300,7 @@ class Trainer(object):
         """
         self.accelerator.wait_for_everyone()
         if self.is_master:
-            transformer = self.accelerator.unwrap_model(self.transformer)
+            transformer = self.accelerator.unwrap_model(copy.deepcopy(self.transformer)).to('cpu')
             transformer = transformer._orig_model if is_compiled_module(transformer) else transformer
             transformer = transformer.to(self.weight_dtype)
             transformer_lora_layers = get_peft_model_state_dict(transformer)
@@ -306,8 +308,8 @@ class Trainer(object):
             StableDiffusion3Pipeline.save_lora_weights(
                 save_directory=self.ckpt_dir,
                 transformer_lora_layers=transformer_lora_layers,
-                weight_name=f'lora_layers_{self.global_step}.bin',
             )
+            logger.info("Saved checkpoint.")
 
     def run(self):
         """
@@ -331,31 +333,37 @@ class Trainer(object):
         total_batch_size = self.batch_size_per_gpu \
                            * self.world_size \
                            * self.accelerator.gradient_accumulation_steps
-
+        
+        lines = []
+        lines.append('***** Running training *****')
+        lines.append(f"  - Num examples: {len(self.dataset)}")
+        lines.append(f"  - Num batches each epoch: {len(self.dataloader)}")
+        lines.append(f"  - Num Epochs: {num_epochs}")
+        lines.append(f"  - Effective batch size: {total_batch_size}")
+        lines.append(f"    - Batch size per device: {self.batch_size_per_gpu}")
+        lines.append(f"    - Gradient accumulation setps: {self.accelerator.gradient_accumulation_steps}")
+        lines.append(f"  - Total optimization steps: {self.max_steps}")
+        lines = '\n'.join(lines)
+        
         if self.is_master:
-            print('***** Running training *****')
-            print(f"  - Num examples: {len(self.dataset)}")
-            print(f"  - Num batches each epoch: {len(self.dataloader)}")
-            print(f"  - Num Epochs: {num_epochs}")
-            print(f"  - Effective batch size: {total_batch_size}")
-            print(f"    - Batch size per device: {self.batch_size_per_gpu}")
-            print(f"    - Gradient accumulation setps: {self.accelerator.gradient_accumulation_steps}")
-            print(f"  - Total optimization steps: {self.max_steps}")
+            logger.info(lines)
 
         self.global_step = 0
         first_epoch = 0
 
-        progress_bar = tqdm(
-            range(0, self.max_steps),
-            initial=self.global_step,
-            desc="Steps",
-            disable=not self.accelerator.is_local_main_process
-        )
+        # progress_bar = tqdm(
+        #     range(0, self.max_steps),
+        #     initial=self.global_step,
+        #     desc="Steps",
+        #     disable=not self.accelerator.is_local_main_process
+        # )
 
         for epoch in range(first_epoch, num_epochs):
             self.transformer.train()
             
             for step, batch in enumerate(self.dataloader):
+                iter_start_time = time.time()
+
                 models_to_accumulate = [self.transformer]
 
                 with self.accelerator.accumulate(models_to_accumulate):
@@ -446,9 +454,6 @@ class Trainer(object):
 
                     self.accelerator.backward(loss)
                     if self.accelerator.sync_gradients:
-                        # params_to_clip = (
-                        #     itertools.chain(self.transformer.parameters())
-                        # )
                         params_to_clip = [p for p in self.transformer.parameters() if p.requires_grad]
                         self.accelerator.clip_grad_norm_(params_to_clip, 1.0)
 
@@ -456,16 +461,24 @@ class Trainer(object):
                     self.lr_scheduler.step()
                     self.optimizer.zero_grad()
 
+                iter_end_time = time.time()
                 # Checks if the accelerator has performed an optimization step behind the scenes
                 if self.accelerator.sync_gradients:
-                    progress_bar.update(1)
+                    # progress_bar.update(1)
                     self.global_step += 1
 
                     logs = {"loss": loss.detach().item(), "lr": self.lr_scheduler.get_last_lr()[0]}
 
                     if self.is_master or self.accelerator.distributed_type == DistributedType.DEEPSPEED:
                         if self.global_step % self.i_print == 0:
-                            progress_bar.set_postfix(**logs)
+                            
+                            log_msg = f"[{self.global_step}/{self.max_steps}] " \
+                                    f"loss: {logs['loss']:.4f}, " \
+                                    f"lr: {logs['lr']:.6f}, " \
+                                    f"Peak Memory: {torch.cuda.max_memory_allocated() / (1024 ** 3):.2f} G, " \
+                                    f"ETA: {calculate_eta(iter_start_time, iter_end_time, self.global_step, self.max_steps)}"
+                            
+                            logger.info(log_msg)
 
                         if self.global_step % self.i_log == 0:
                             self.accelerator.log(logs, step=self.global_step)
@@ -483,4 +496,4 @@ class Trainer(object):
         
         if self.is_master:
             self.accelerator.end_training()
-            print("done!")
+            logger.info("done!")

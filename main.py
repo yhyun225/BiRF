@@ -64,7 +64,7 @@ def main():
     output_dir = args.output_dir
     logging_dir = os.path.join(output_dir, 'log')
     
-    setup_logger(logging_dir)
+    logger = setup_logger(logging_dir)
     set_seed(args.seed)
     
     accelerator_project_config = ProjectConfiguration(
@@ -82,10 +82,10 @@ def main():
     if accelerator.is_main_process:
         try:
             user_info = whoami()
-            print(f"\n***** Huggingface-hub logged in as [{user_info['name']}].\n")
+            logger.info(f"***** Huggingface-hub logged in as [{user_info['name']}].")
         except:
-            print("Not logged in or invalid token")
-            print("Retry login...")
+            logger.info("***** Not logged in or invalid token")
+            logger.info("***** Try login...")
             login()
             
         os.makedirs(output_dir, exist_ok=True)
