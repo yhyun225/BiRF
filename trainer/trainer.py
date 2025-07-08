@@ -9,6 +9,7 @@ import torch
 from torch.utils.data import DataLoader
 import numpy as np
 from tqdm import tqdm
+from omegaconf import OmegaConf
 
 from accelerate import Accelerator, DistributedType
 from accelerate.logging import get_logger
@@ -23,6 +24,7 @@ from diffusers import (
     StableDiffusion3Pipeline
 )
 from diffusers.utils import is_wandb_available
+from diffusers.utils.torch_utils import is_compiled_module
 from diffusers.training_utils import (
     _set_state_dict_into_text_encoder,
     cast_training_params,
@@ -32,6 +34,7 @@ from diffusers.training_utils import (
 )
 
 from peft import LoraConfig, set_peft_model_state_dict
+from peft.utils import get_peft_model_state_dict
 
 from transformers import CLIPTokenizer, T5TokenizerFast
 from transformers import CLIPTextModelWithProjection, T5EncoderModel
@@ -90,8 +93,10 @@ class Trainer(object):
         self.step = None
 
         if self.is_master:
-            os.makedirs(os.path.join(self.output_dir, 'ckpts'), exist_ok=True)
-            os.makedirs(os.path.join(self.output_dir, 'samples'), exist_ok=True)
+            self.ckpt_dir = os.path.join(self.output_dir, 'ckpts')
+            self.sample_dir = os.path.join(self.output_dir, 'samples')
+            os.makedirs(self.ckpt_dir, exist_ok=True)
+            os.makedirs(self.sample_dir, exist_ok=True)
 
         self.init_models(self.cfg.model)
         self.prepare_dataloader(self.cfg.dataloader)
@@ -100,6 +105,12 @@ class Trainer(object):
         self.transformer, self.optimizer, self.dataloader, self.lr_scheduler = self.accelerator.prepare(
             self.transformer, self.optimizer, self.dataloader, self.lr_scheduler
         )
+
+        if self.master and is_wandb_available():
+            self.accelerator.init_trackers(
+                project_name="BiRF", 
+                config=OmegaConf.to_container(self.cfg, resolve=True)
+            )
 
         if self.is_master:
             print('\n\nTrainer initialized.')
@@ -174,6 +185,7 @@ class Trainer(object):
             # only upcast trainable parameters (LoRA) into fp32
             cast_training_params(self.transformer, dtype=torch.float32)
 
+        # VAE
         self.vae = AutoencoderKL.from_pretrained(
                 pretrained_model_name_or_path, subfolder='vae',
             )
@@ -272,12 +284,29 @@ class Trainer(object):
         if self.is_master:
             print(' Done.')
 
+    def load(self):
+        """
+        Load a checkpoint.
+        Should be called by all processes.
+        """
+
     def save(self):
         """
         Save a checkpoint.
         Should be called by main process.
         """
-
+        self.accelerator.wait_for_everyone()
+        if self.is_master:
+            transformer = self.accelerator.unwrap_model(self.transformer)
+            transformer = transformer._orig_model if is_compiled_module(transformer) else transformer
+            transformer = transformer.to(self.weight_dtype)
+            transformer_lora_layers = get_peft_model_state_dict(transformer)
+        
+        StableDiffusion3Pipeline.save_lora_weights(
+            save_directory=self.ckpt_dir,
+            transformer_lora_layers=transformer_lora_layers,
+            weight_name=f'lora_layers_{self.global_step}.bin',
+        )
 
     def run(self):
         """
@@ -312,12 +341,12 @@ class Trainer(object):
             print(f"    - Gradient accumulation setps: {self.accelerator.gradient_accumulation_steps}")
             print(f"  - Total optimization steps: {self.max_steps}")
 
-        global_step = 0
+        self.global_step = 0
         first_epoch = 0
 
         progress_bar = tqdm(
             range(0, self.max_steps),
-            initial=global_step,
+            initial=self.global_step,
             desc="Steps",
             disable=not self.accelerator.is_local_main_process
         )
@@ -402,16 +431,16 @@ class Trainer(object):
                         return_dict=False,
                     )[0]
                     
-
-                    # precondition outputs - EDM
-                    # model_pred = model_pred * (-sigmas) + noisy_model_input
-                    weighting = compute_loss_weighting_for_sd3(weighting_scheme=self.cfg.weighting_scheme, sigmas=sigmas)
-
+                    # NOTE: weighting here or not?
+                    # weighting = compute_loss_weighting_for_sd3(weighting_scheme=self.cfg.weighting_scheme, sigmas=sigmas)
+                    # loss = torch.mean(
+                    #     (weighting.float() * (model_pred.float() - model_pred_next.float()) ** 2).reshape(model_pred.shape[0], -1),
+                    #     1,
+                    # )
                     loss = torch.mean(
-                        (weighting.float() * (model_pred.float() - model_pred_next.float()) ** 2).reshape(model_pred.shape[0], -1),
+                        ((model_pred.float() - model_pred_next.float()) ** 2).reshape(model_pred.shape[0], -1),
                         1,
                     )
-
                     loss = loss.mean()
 
                     self.accelerator.backward(loss)
@@ -429,25 +458,25 @@ class Trainer(object):
                 # Checks if the accelerator has performed an optimization step behind the scenes
                 if self.accelerator.sync_gradients:
                     progress_bar.update(1)
-                    global_step += 1
+                    self.global_step += 1
 
                     logs = {"loss": loss.detach().item(), "lr": self.lr_scheduler.get_last_lr()[0]}
 
                     if self.is_master or self.accelerator.distributed_type == DistributedType.DEEPSPEED:
-                        if global_step % self.i_print == 0:
+                        if self.global_step % self.i_print == 0:
                             progress_bar.set_postfix(**logs)
 
-                        if global_step % self.i_log == 0:
-                            self.accelerator.log(logs, step=global_step)
+                        if self.global_step % self.i_log == 0:
+                            self.accelerator.log(logs, step=self.global_step)
 
-                        if global_step % self.i_sample == 0:
+                        if self.global_step % self.i_sample == 0:
                             pass
 
-                        if global_step % self.i_save == 0:
-                            save_path = os.path.join(self.output_dir, f'checkpoint-{global_step}')
+                        if self.global_step % self.i_save == 0:
+                            save_path = os.path.join(self.output_dir, f'checkpoint-{self.global_step}')
                             self.accelerator.save_state(save_path)
 
-                if global_step >= self.max_steps:
+                if self.global_step >= self.max_steps:
                     break
         
         if self.is_master:
