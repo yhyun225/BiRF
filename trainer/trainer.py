@@ -298,7 +298,6 @@ class Trainer(object):
         Save a checkpoint.
         Should be called by main process.
         """
-        self.accelerator.wait_for_everyone()
         if self.is_master:
             transformer = self.accelerator.unwrap_model(copy.deepcopy(self.transformer)).to('cpu')
             transformer = transformer._orig_model if is_compiled_module(transformer) else transformer
@@ -310,6 +309,8 @@ class Trainer(object):
                 transformer_lora_layers=transformer_lora_layers,
             )
             logger.info("Saved checkpoint.")
+        
+        self.accelerator.wait_for_everyone()
 
     def run(self):
         """
@@ -489,11 +490,13 @@ class Trainer(object):
                         if self.global_step % self.i_save == 0:
                             save_path = os.path.join(self.ckpt_dir, f'checkpoint-{self.global_step}')
                             self.accelerator.save_state(save_path)
-                            self.save()
+                            # self.save()
 
                 if self.global_step >= self.max_steps:
                     break
+    
+        # save lora layers
+        self.save()
         
-        if self.is_master:
-            self.accelerator.end_training()
-            logger.info("done!")
+        self.accelerator.end_training()
+        logger.info("done!")

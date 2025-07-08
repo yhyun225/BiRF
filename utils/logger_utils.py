@@ -40,7 +40,6 @@ def setup_logger(log_dir, log_filename='log.log', logger_name='mylogger'):
     return logger
 
 def calculate_eta(iter_start_time, iter_end_time, step, max_steps):
-    avg_elapsed = (iter_end_time - iter_start_time) / step
-    eta_sec = avg_elapsed * (max_steps - step)
-
+    elapsed = (iter_end_time - iter_start_time)
+    eta_sec = elapsed * (max_steps - step)
     return time.strftime("%H:%M:%S", time.gmtime(eta_sec))
