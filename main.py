@@ -12,6 +12,7 @@ from trainer import Trainer
 from dataset import YePopDataset
 
 from huggingface_hub import whoami, login
+from utils.logger_utils import setup_logger
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -20,6 +21,9 @@ def parse_args():
     )
     parser.add_argument(
         '--output_dir', type=str, default='output',
+    )
+    parser.add_argument(
+        '--seed', type=int, default=0,
     )
     parser.add_argument(
         '--max_steps', type=int, default=100_000,
@@ -60,11 +64,14 @@ def main():
     output_dir = args.output_dir
     logging_dir = os.path.join(output_dir, 'log')
     
+    setup_logger(logging_dir)
+    set_seed(args.seed)
+    
     accelerator_project_config = ProjectConfiguration(
             project_dir=output_dir, 
             logging_dir=logging_dir,
         )
-    kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
+    kwargs = DistributedDataParallelKwargs(find_unused_parameters=False)
     accelerator = Accelerator(
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         mixed_precision='fp16' if args.mixed_precision == 'fp16' else 'fp32',
@@ -73,6 +80,14 @@ def main():
     )
 
     if accelerator.is_main_process:
+        try:
+            user_info = whoami()
+            print(f"\n***** Huggingface-hub logged in as [{user_info['name']}].\n")
+        except:
+            print("Not logged in or invalid token")
+            print("Retry login...")
+            login()
+            
         os.makedirs(output_dir, exist_ok=True)
         os.makedirs(logging_dir, exist_ok=True)
 
@@ -81,7 +96,7 @@ def main():
         with open(os.path.join(logging_dir, 'config.yaml'), 'w') as fp:
             yaml.dump(OmegaConf.to_container(cfg, resolve=True), fp, indent=4)
         
-    # TODO: call dataset here
+    
     dataset = YePopDataset(cfg.dataset)
 
     trainer = Trainer(
@@ -103,12 +118,4 @@ def main():
     trainer.run()
 
 if __name__ == "__main__":
-    try:
-        user_info = whoami()
-        print(f"\n***** Huggingface-hub logged in as [{user_info['name']}].\n")
-    except:
-        print("Not logged in or invalid token")
-        print("Retry login...")
-        login()
-    
     main()

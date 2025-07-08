@@ -106,7 +106,7 @@ class Trainer(object):
             self.transformer, self.optimizer, self.dataloader, self.lr_scheduler
         )
 
-        if self.master and is_wandb_available():
+        if self.is_master and is_wandb_available():
             self.accelerator.init_trackers(
                 project_name="BiRF", 
                 config=OmegaConf.to_container(self.cfg, resolve=True)
@@ -289,6 +289,7 @@ class Trainer(object):
         Load a checkpoint.
         Should be called by all processes.
         """
+        pass
 
     def save(self):
         """
@@ -302,11 +303,11 @@ class Trainer(object):
             transformer = transformer.to(self.weight_dtype)
             transformer_lora_layers = get_peft_model_state_dict(transformer)
         
-        StableDiffusion3Pipeline.save_lora_weights(
-            save_directory=self.ckpt_dir,
-            transformer_lora_layers=transformer_lora_layers,
-            weight_name=f'lora_layers_{self.global_step}.bin',
-        )
+            StableDiffusion3Pipeline.save_lora_weights(
+                save_directory=self.ckpt_dir,
+                transformer_lora_layers=transformer_lora_layers,
+                weight_name=f'lora_layers_{self.global_step}.bin',
+            )
 
     def run(self):
         """
@@ -473,8 +474,9 @@ class Trainer(object):
                             pass
 
                         if self.global_step % self.i_save == 0:
-                            save_path = os.path.join(self.output_dir, f'checkpoint-{self.global_step}')
+                            save_path = os.path.join(self.ckpt_dir, f'checkpoint-{self.global_step}')
                             self.accelerator.save_state(save_path)
+                            self.save()
 
                 if self.global_step >= self.max_steps:
                     break

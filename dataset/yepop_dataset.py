@@ -14,7 +14,7 @@ class YePopDataset(Dataset):
         self,
         cfg,
         return_image_path=False,
-        annotation_pt_path=None,
+        preprocessed_annotation=None,
     ):
         DATASET_POSTFIX = 'metadata/images'
         self.root_path = os.path.join(cfg.root_path, DATASET_POSTFIX)  # '/hdd/.../ye_pop'
@@ -26,8 +26,8 @@ class YePopDataset(Dataset):
 
         self.total = 0
 
-        if annotation_pt_path is not None:
-            self.dataset = torch.load(annotation_pt_path, weights_only=True)
+        if preprocessed_annotation is not None:
+            self.dataset = torch.load(preprocessed_annotation, weights_only=True)
             self.total = len(self.dataset)
         else:
             chunks = sorted(os.listdir(self.root_path))

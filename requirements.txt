@@ -8,3 +8,4 @@ peft
 diffusers==0.34.0
 huggingface-hub==0.33.1
 wandb
+colorlog
