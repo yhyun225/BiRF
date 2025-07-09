@@ -1,6 +1,7 @@
 __pycache__/
 /output/
 /debug.py
+/wandb/
 
 train.sh
 
