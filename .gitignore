@@ -3,3 +3,5 @@ __pycache__/
 /debug.py
 
 train.sh
+
+preprocessed_anntation.pt

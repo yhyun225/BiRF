@@ -490,6 +490,7 @@ class Trainer(object):
                         if self.global_step % self.i_save == 0:
                             save_path = os.path.join(self.ckpt_dir, f'checkpoint-{self.global_step}')
                             self.accelerator.save_state(save_path)
+                            logger.info('Saved training states.')
                             # self.save()
 
                 if self.global_step >= self.max_steps:

@@ -76,6 +76,7 @@ class YePopDataset(Dataset):
                                 
                         self.dataset.append(info)
 
+        torch.save(self.dataset, 'preprocessed_annotation.pt')
         self._length = len(self.dataset)
 
         self.transforms = T.Compose([
