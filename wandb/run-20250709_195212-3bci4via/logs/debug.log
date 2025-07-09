@@ -1,0 +1,23 @@
+2025-07-09 19:52:12,271 INFO    MainThread:330874 [wandb_setup.py:_flush():80] Current SDK version is 0.21.0
+2025-07-09 19:52:12,271 INFO    MainThread:330874 [wandb_setup.py:_flush():80] Configure stats pid to 330874
+2025-07-09 19:52:12,271 INFO    MainThread:330874 [wandb_setup.py:_flush():80] Loading settings from /home/yhyun225/.config/wandb/settings
+2025-07-09 19:52:12,272 INFO    MainThread:330874 [wandb_setup.py:_flush():80] Loading settings from /home/yhyun225/BiRF/wandb/settings
+2025-07-09 19:52:12,272 INFO    MainThread:330874 [wandb_setup.py:_flush():80] Loading settings from environment variables
+2025-07-09 19:52:12,272 INFO    MainThread:330874 [wandb_init.py:setup_run_log_directory():703] Logging user logs to /home/yhyun225/BiRF/wandb/run-20250709_195212-3bci4via/logs/debug.log
+2025-07-09 19:52:12,272 INFO    MainThread:330874 [wandb_init.py:setup_run_log_directory():704] Logging internal logs to /home/yhyun225/BiRF/wandb/run-20250709_195212-3bci4via/logs/debug-internal.log
+2025-07-09 19:52:12,272 INFO    MainThread:330874 [wandb_init.py:init():830] calling init triggers
+2025-07-09 19:52:12,272 INFO    MainThread:330874 [wandb_init.py:init():835] wandb.init called with sweep_config: {}
+config: {'_wandb': {}}
+2025-07-09 19:52:12,272 INFO    MainThread:330874 [wandb_init.py:init():871] starting backend
+2025-07-09 19:52:12,684 INFO    MainThread:330874 [wandb_init.py:init():874] sending inform_init request
+2025-07-09 19:52:12,691 INFO    MainThread:330874 [wandb_init.py:init():882] backend started and connected
+2025-07-09 19:52:12,695 INFO    MainThread:330874 [wandb_init.py:init():953] updated telemetry
+2025-07-09 19:52:12,703 INFO    MainThread:330874 [wandb_init.py:init():977] communicating run to backend with 90.0 second timeout
+2025-07-09 19:52:13,490 INFO    MainThread:330874 [wandb_init.py:init():1029] starting run threads in backend
+2025-07-09 19:52:13,540 INFO    MainThread:330874 [wandb_run.py:_console_start():2458] atexit reg
+2025-07-09 19:52:13,541 INFO    MainThread:330874 [wandb_run.py:_redirect():2306] redirect: wrap_raw
+2025-07-09 19:52:13,541 INFO    MainThread:330874 [wandb_run.py:_redirect():2375] Wrapping output streams.
+2025-07-09 19:52:13,541 INFO    MainThread:330874 [wandb_run.py:_redirect():2398] Redirects installed.
+2025-07-09 19:52:13,543 INFO    MainThread:330874 [wandb_init.py:init():1075] run started, returning control to user process
+2025-07-09 19:52:13,543 INFO    MainThread:330874 [wandb_run.py:_config_callback():1363] config_cb None None {'dataloader': {'num_workers': None, 'pin_memory': True, 'drop_last': True, 'persistent_workers': True, 'shuffle': True}, 'optimizer': {'learning_rate': 0.0001, 'beta1': 0.9, 'beta2': 0.999, 'weight_decay': 0.0001, 'epsilon': 1e-08, 'lr_scheduler': 'constant', 'lr_warmup_steps': 500, 'lr_num_cycles': 1, 'lr_power': 1.0}, 'model': {'pretrained_model_name_or_path': 'stabilityai/stable-diffusion-3-medium-diffusers', 'cache_dir': '/hdd/yhyun225/cache', 'lora': {'layers': None, 'rank': 4, 'dropout': 0.0}}, 'weighting_scheme': 'logit_normal', 'logit_mean': 0.0, 'logit_std': 1.0, 'mode_scale': 1.29}
+2025-07-09 19:57:00,838 INFO    MsgRouterThr:330874 [mailbox.py:close():129] [no run ID] Closing mailbox, abandoning 1 handles.

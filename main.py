@@ -8,6 +8,8 @@ from accelerate import Accelerator, DistributedType
 from accelerate.logging import get_logger
 from accelerate.utils import DistributedDataParallelKwargs, ProjectConfiguration, set_seed
 
+from diffusers.utils import is_wandb_available
+
 from trainer import Trainer
 from dataset import YePopDataset
 
@@ -52,6 +54,10 @@ def parse_args():
     parser.add_argument(
         '--i_save', type=int, default=10_000
     )
+    parser.add_argument(
+        '--wandb', action='store_true', default=False
+    )
+    
 
     args = parser.parse_args()
 
@@ -63,6 +69,8 @@ def main():
     
     output_dir = args.output_dir
     logging_dir = os.path.join(output_dir, 'log')
+    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(logging_dir, exist_ok=True)
     
     logger = setup_logger(logging_dir)
     set_seed(args.seed)
@@ -71,12 +79,11 @@ def main():
             project_dir=output_dir, 
             logging_dir=logging_dir,
         )
-    kwargs = DistributedDataParallelKwargs(find_unused_parameters=False)
     accelerator = Accelerator(
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         mixed_precision='fp16' if args.mixed_precision == 'fp16' else 'fp32',
         project_config=accelerator_project_config,
-        kwargs_handlers=[kwargs],
+        log_with="wandb" if is_wandb_available and args.wandb else None,
     )
 
     if accelerator.is_main_process:
@@ -88,8 +95,7 @@ def main():
             logger.info("***** Try login...")
             login()
             
-        os.makedirs(output_dir, exist_ok=True)
-        os.makedirs(logging_dir, exist_ok=True)
+        
 
         with open(os.path.join(logging_dir, 'command.txt'), 'w') as fp:
             print(' '.join(['python'] + sys.argv), file=fp)
@@ -98,6 +104,7 @@ def main():
         
     
     dataset = YePopDataset(cfg.dataset, preprocessed_annotation='preprocessed_annotation.pt')
+    # dataset = YePopDataset(cfg.dataset)
 
     trainer = Trainer(
         accelerator,

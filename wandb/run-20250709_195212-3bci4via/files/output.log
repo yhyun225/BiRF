@@ -1,0 +1,174 @@
+[32m[2025/07/09-19:52:13]
+
+Trainer initialized.[0m
+[32m[2025/07/09-19:52:13] ***** Trainer *****
+  - Dataset: YePopDataset
+    - Data in annotation: 491567
+    - Total instances: 491567
+    - Missing instances: 0
+    - Root path: /hdd/yhyun225/dataset/ye_pop/metadata/images
+    - Caption model: cogvlm
+    - Preprocessed data: True
+  - Dataloader:
+    - Sample: SequentialSampler
+    - Num workers: 95
+  - Number of steps: 100000
+  - Number of GPUs: 1
+  - Batch size: None
+  - Batch size per GPU: 8
+  - Optimizer: AcceleratedOptimizer
+  - Learning rate: 0.0001
+  - LR scheduler: AcceleratedScheduler
+  - FP16 mode: True[0m
+[32m[2025/07/09-19:52:13] ***** Running training *****
+  - Num examples: 491567
+  - Num batches each epoch: 61445
+  - Num Epochs: 4
+  - Effective batch size: 16
+    - Batch size per device: 8
+    - Gradient accumulation setps: 2
+  - Total optimization steps: 100000[0m
+[32m[2025/07/09-19:52:31] [1/100000] loss: 1.8258, lr: 0.000100, Peak Memory: 46.48 G, ETA: 21:00:21[0m
+[32m[2025/07/09-19:52:34] [2/100000] loss: 1.8603, lr: 0.000100, Peak Memory: 46.50 G, ETA: 17:49:26[0m
+[32m[2025/07/09-19:52:37] [3/100000] loss: 1.9772, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:00:17[0m
+[32m[2025/07/09-19:52:40] [4/100000] loss: 1.9392, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:14:04[0m
+[32m[2025/07/09-19:52:43] [5/100000] loss: 1.7877, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:07:10[0m
+[32m[2025/07/09-19:52:46] [6/100000] loss: 1.8373, lr: 0.000100, Peak Memory: 46.50 G, ETA: 17:57:07[0m
+[32m[2025/07/09-19:52:49] [7/100000] loss: 1.6709, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:03:50[0m
+[32m[2025/07/09-19:52:52] [8/100000] loss: 1.6021, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:19:46[0m
+[32m[2025/07/09-19:52:56] [9/100000] loss: 1.7780, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:22:12[0m
+[32m[2025/07/09-19:52:59] [10/100000] loss: 1.7648, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:20:22[0m
+[32m[2025/07/09-19:53:02] [11/100000] loss: 1.8082, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:22:18[0m
+[32m[2025/07/09-19:53:05] [12/100000] loss: 1.8114, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:24:25[0m
+[32m[2025/07/09-19:53:08] [13/100000] loss: 1.6803, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:24:44[0m
+[32m[2025/07/09-19:53:11] [14/100000] loss: 1.5861, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:23:32[0m
+[32m[2025/07/09-19:53:14] [15/100000] loss: 1.8126, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:22:59[0m
+[32m[2025/07/09-19:53:17] [16/100000] loss: 1.7563, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:21:09[0m
+[32m[2025/07/09-19:53:20] [17/100000] loss: 1.6985, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:42:05[0m
+[32m[2025/07/09-19:53:23] [18/100000] loss: 1.6591, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:43:10[0m
+[32m[2025/07/09-19:53:26] [19/100000] loss: 1.4657, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:22:30[0m
+[32m[2025/07/09-19:53:29] [20/100000] loss: 1.7394, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:24:51[0m
+[32m[2025/07/09-19:53:32] [21/100000] loss: 1.6723, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:21:58[0m
+[32m[2025/07/09-19:53:35] [22/100000] loss: 1.5297, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:18:24[0m
+[32m[2025/07/09-19:53:38] [23/100000] loss: 1.6573, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:20:28[0m
+[32m[2025/07/09-19:53:41] [24/100000] loss: 1.5767, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:31:25[0m
+[32m[2025/07/09-19:53:44] [25/100000] loss: 1.5413, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:32:44[0m
+[32m[2025/07/09-19:53:47] [26/100000] loss: 1.6347, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:33:26[0m
+[32m[2025/07/09-19:53:50] [27/100000] loss: 1.6062, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:30:48[0m
+[32m[2025/07/09-19:53:53] [28/100000] loss: 1.5337, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:27:35[0m
+[32m[2025/07/09-19:53:56] [29/100000] loss: 1.4628, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:32:31[0m
+[32m[2025/07/09-19:54:00] [30/100000] loss: 1.5712, lr: 0.000100, Peak Memory: 46.50 G, ETA: 19:06:37[0m
+[32m[2025/07/09-19:54:03] [31/100000] loss: 1.3825, lr: 0.000100, Peak Memory: 46.50 G, ETA: 19:00:56[0m
+[32m[2025/07/09-19:54:06] [32/100000] loss: 1.4904, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:45:23[0m
+[32m[2025/07/09-19:54:09] [33/100000] loss: 1.5107, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:38:31[0m
+[32m[2025/07/09-19:54:12] [34/100000] loss: 1.4655, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:51:26[0m
+[32m[2025/07/09-19:54:15] [35/100000] loss: 1.2122, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:47:17[0m
+[32m[2025/07/09-19:54:18] [36/100000] loss: 1.5444, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:54:46[0m
+[32m[2025/07/09-19:54:21] [37/100000] loss: 1.3706, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:55:00[0m
+[32m[2025/07/09-19:54:24] [38/100000] loss: 1.3555, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:54:26[0m
+[32m[2025/07/09-19:54:28] [39/100000] loss: 1.2214, lr: 0.000100, Peak Memory: 46.50 G, ETA: 11:26:53[0m
+[32m[2025/07/09-19:54:31] [40/100000] loss: 1.4500, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:47:38[0m
+[32m[2025/07/09-19:54:34] [41/100000] loss: 1.2661, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:52:41[0m
+[32m[2025/07/09-19:54:37] [42/100000] loss: 1.3324, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:58:30[0m
+[32m[2025/07/09-19:54:40] [43/100000] loss: 1.2180, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:56:31[0m
+[32m[2025/07/09-19:54:43] [44/100000] loss: 1.3317, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:52:28[0m
+[32m[2025/07/09-19:54:46] [45/100000] loss: 1.2652, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:55:25[0m
+[32m[2025/07/09-19:54:49] [46/100000] loss: 1.3173, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:54:36[0m
+[32m[2025/07/09-19:54:52] [47/100000] loss: 1.2178, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:53:54[0m
+[32m[2025/07/09-19:54:56] [48/100000] loss: 1.3456, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:51:14[0m
+[32m[2025/07/09-19:54:59] [49/100000] loss: 1.3226, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:48:48[0m
+[32m[2025/07/09-19:55:02] [50/100000] loss: 1.2543, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:50:56[0m
+[32m[2025/07/09-19:55:05] [51/100000] loss: 1.2178, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:53:52[0m
+[32m[2025/07/09-19:55:08] [52/100000] loss: 1.2337, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:53:33[0m
+[32m[2025/07/09-19:55:11] [53/100000] loss: 1.2362, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:53:50[0m
+[32m[2025/07/09-19:55:14] [54/100000] loss: 1.2289, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:55:31[0m
+[32m[2025/07/09-19:55:17] [55/100000] loss: 1.1323, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:52:57[0m
+[32m[2025/07/09-19:55:20] [56/100000] loss: 1.2411, lr: 0.000100, Peak Memory: 46.50 G, ETA: 19:02:38[0m
+[32m[2025/07/09-19:55:23] [57/100000] loss: 1.1402, lr: 0.000100, Peak Memory: 46.50 G, ETA: 19:09:26[0m
+[32m[2025/07/09-19:55:26] [58/100000] loss: 1.2303, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:52:19[0m
+[32m[2025/07/09-19:55:29] [59/100000] loss: 1.0922, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:49:34[0m
+[32m[2025/07/09-19:55:33] [60/100000] loss: 1.1969, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:55:30[0m
+[32m[2025/07/09-19:55:36] [61/100000] loss: 1.1751, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:53:49[0m
+[32m[2025/07/09-19:55:39] [62/100000] loss: 1.0882, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:53:55[0m
+[32m[2025/07/09-19:55:42] [63/100000] loss: 1.1656, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:58:36[0m
+[32m[2025/07/09-19:55:45] [64/100000] loss: 1.1698, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:53:10[0m
+[32m[2025/07/09-19:55:48] [65/100000] loss: 1.1768, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:49:50[0m
+[32m[2025/07/09-19:55:51] [66/100000] loss: 1.1620, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:51:29[0m
+[32m[2025/07/09-19:55:54] [67/100000] loss: 1.1886, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:52:59[0m
+[32m[2025/07/09-19:55:57] [68/100000] loss: 1.1954, lr: 0.000100, Peak Memory: 46.50 G, ETA: 19:14:22[0m
+[32m[2025/07/09-19:56:00] [69/100000] loss: 1.1256, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:59:50[0m
+[32m[2025/07/09-19:56:03] [70/100000] loss: 1.0783, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:49:55[0m
+[32m[2025/07/09-19:56:06] [71/100000] loss: 1.1503, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:52:59[0m
+[32m[2025/07/09-19:56:10] [72/100000] loss: 1.0856, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:53:11[0m
+[32m[2025/07/09-19:56:13] [73/100000] loss: 1.0729, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:52:06[0m
+[32m[2025/07/09-19:56:16] [74/100000] loss: 1.1357, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:54:43[0m
+[32m[2025/07/09-19:56:19] [75/100000] loss: 1.1434, lr: 0.000100, Peak Memory: 46.50 G, ETA: 19:00:20[0m
+[32m[2025/07/09-19:56:22] [76/100000] loss: 1.0917, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:47:09[0m
+[32m[2025/07/09-19:56:25] [77/100000] loss: 1.0913, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:50:31[0m
+[32m[2025/07/09-19:56:28] [78/100000] loss: 1.0593, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:47:42[0m
+[32m[2025/07/09-19:56:31] [79/100000] loss: 1.0558, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:51:16[0m
+[32m[2025/07/09-19:56:34] [80/100000] loss: 1.1808, lr: 0.000100, Peak Memory: 46.50 G, ETA: 19:08:16[0m
+[32m[2025/07/09-19:56:37] [81/100000] loss: 1.1272, lr: 0.000100, Peak Memory: 46.50 G, ETA: 19:09:21[0m
+[32m[2025/07/09-19:56:40] [82/100000] loss: 1.0900, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:57:53[0m
+[32m[2025/07/09-19:56:43] [83/100000] loss: 1.0702, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:49:10[0m
+[32m[2025/07/09-19:56:47] [84/100000] loss: 1.0377, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:51:45[0m
+[32m[2025/07/09-19:56:50] [85/100000] loss: 1.1554, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:50:56[0m
+[32m[2025/07/09-19:56:53] [86/100000] loss: 1.0619, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:47:48[0m
+[32m[2025/07/09-19:56:56] [87/100000] loss: 1.0253, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:52:34[0m
+[32m[2025/07/09-19:56:59] [88/100000] loss: 1.0760, lr: 0.000100, Peak Memory: 46.50 G, ETA: 18:59:18[0m
+Traceback (most recent call last):
+  File "/home/yhyun225/BiRF/main.py", line 128, in <module>
+    main()
+  File "/home/yhyun225/BiRF/main.py", line 125, in main
+    trainer.run()
+  File "/home/yhyun225/BiRF/trainer/trainer.py", line 413, in run
+    model_pred = self.frozen_transformer(
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/site-packages/diffusers/models/transformers/transformer_sd3.py", line 396, in forward
+    encoder_hidden_states, hidden_states = block(
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/site-packages/diffusers/models/attention.py", line 213, in forward
+    attn_output, context_attn_output = self.attn(
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/site-packages/diffusers/models/attention_processor.py", line 605, in forward
+    return self.processor(
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/site-packages/diffusers/models/attention_processor.py", line 1493, in __call__
+    encoder_hidden_states = attn.to_add_out(encoder_hidden_states)
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1716, in __getattr__
+    def __getattr__(self, name: str) -> Any:
+KeyboardInterrupt
+Exception ignored in atexit callback: <function _MultiProcessingDataLoaderIter._clean_up_worker at 0x7fc04b52a050>
+Traceback (most recent call last):
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1471, in _clean_up_worker
+    w.join(timeout=_utils.MP_STATUS_CHECK_INTERVAL)
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/multiprocessing/popen_fork.py", line 40, in wait
+    if not wait([self.sentinel], timeout):
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/multiprocessing/connection.py", line 931, in wait
+    ready = selector.select(timeout)
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/selectors.py", line 416, in select
+    fd_event_list = self._selector.poll(timeout)
+KeyboardInterrupt:
+Exception ignored in atexit callback: <function _MultiProcessingDataLoaderIter._clean_up_worker at 0x7fc04b52a050>
+Traceback (most recent call last):
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1471, in _clean_up_worker
+    w.join(timeout=_utils.MP_STATUS_CHECK_INTERVAL)
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/multiprocessing/popen_fork.py", line 40, in wait
+    if not wait([self.sentinel], timeout):
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/multiprocessing/connection.py", line 931, in wait
+    ready = selector.select(timeout)
+  File "/home/yhyun225/anaconda3/envs/birf/lib/python3.10/selectors.py", line 416, in select
+    fd_event_list = self._selector.poll(timeout)
+KeyboardInterrupt:
