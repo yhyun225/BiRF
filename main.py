@@ -97,7 +97,7 @@ def main():
             yaml.dump(OmegaConf.to_container(cfg, resolve=True), fp, indent=4)
         
     
-    dataset = YePopDataset(cfg.dataset)
+    dataset = YePopDataset(cfg.dataset, preprocessed_annotation='preprocessed_annotation.pt')
 
     trainer = Trainer(
         accelerator,

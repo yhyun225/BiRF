@@ -4,4 +4,4 @@ __pycache__/
 
 train.sh
 
-preprocessed_anntation.pt
+preprocessed_annotation.pt
