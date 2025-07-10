@@ -2,7 +2,7 @@
 CUDA_VISIBLE_DEVICES=0 accelerate launch \
     --num_processes 1 \
     main.py \
-    --batch_size_per_gpu 8 \
+    --batch_size_per_gpu 12 \
     --gradient_accumulation_steps 2 \
     --i_print 1 \
     --i_log 10 \
