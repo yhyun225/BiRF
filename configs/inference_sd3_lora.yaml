@@ -1,0 +1,9 @@
+model:
+  pretrained_model_name_or_path: "stabilityai/stable-diffusion-3-medium-diffusers"
+  cache_dir: "/hdd/yhyun225/cache"
+  lora:
+    layers: ~
+    rank: 4
+    dropout: 0.0
+
+example_path: './examples'

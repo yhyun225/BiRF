@@ -81,7 +81,7 @@ def main():
         )
     accelerator = Accelerator(
         gradient_accumulation_steps=args.gradient_accumulation_steps,
-        mixed_precision='fp16' if args.mixed_precision == 'fp16' else 'fp32',
+        mixed_precision=args.mixed_precision,
         project_config=accelerator_project_config,
         log_with="wandb" if is_wandb_available and args.wandb else None,
     )
@@ -102,7 +102,6 @@ def main():
         with open(os.path.join(logging_dir, 'config.yaml'), 'w') as fp:
             yaml.dump(OmegaConf.to_container(cfg, resolve=True), fp, indent=4)
         
-    
     dataset = YePopDataset(cfg.dataset, preprocessed_annotation='preprocessed_annotation.pt')
     # dataset = YePopDataset(cfg.dataset)
 

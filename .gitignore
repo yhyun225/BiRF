@@ -1,5 +1,7 @@
 __pycache__/
 /output/
+/results/
+/examples/
 /debug.py
 /wandb/
 
