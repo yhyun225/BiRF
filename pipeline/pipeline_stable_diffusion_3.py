@@ -1398,8 +1398,8 @@ class StableDiffusion3Pipeline(DiffusionPipeline, SD3LoraLoaderMixin, FromSingle
 
             image = self.vae.decode(latents, return_dict=False)[0]
             image = self.image_processor.postprocess(image, output_type='pil')[0]
-            image.save("reconstructed.png")
-            import sys; sys.exit(0)
+            # image.save("reconstructed.png")
+            # import sys; sys.exit(0)
 
         else:
             raise ValueError("Either image or its latent should be provided for inversion.")
@@ -1512,11 +1512,11 @@ class StableDiffusion3Pipeline(DiffusionPipeline, SD3LoraLoaderMixin, FromSingle
                 latents = self.scheduler.step(noise_pred, t, latents, return_dict=False)[0]
 
                 ### visualize inversion ###
-                latents_vis = (latents / self.vae.config.scaling_factor) + self.vae.config.shift_factor
+                # latents_vis = (latents / self.vae.config.scaling_factor) + self.vae.config.shift_factor
 
-                image = self.vae.decode(latents_vis, return_dict=False)[0]
-                image = self.image_processor.postprocess(image, output_type='pil')[0]
-                image.save(f'inversion_log/vanilla/inversed_t{int(t.item())}.png')
+                # image = self.vae.decode(latents_vis, return_dict=False)[0]
+                # image = self.image_processor.postprocess(image, output_type='pil')[0]
+                # image.save(f'inversion_log/vanilla/inversed_t{int(t.item())}.png')
                 ### visualize inversion ###
 
                 if latents.dtype != latents_dtype:

@@ -4,6 +4,7 @@ __pycache__/
 /examples/
 /debug.py
 /wandb/
+/pipeline/output/
 
 train.sh
 

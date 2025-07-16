@@ -35,7 +35,7 @@ def parse_args():
         '--mixed_precision', type=str, choices=['fp16', 'fp32'], default='fp16'
     )
     parser.add_argument(
-        '--ckpt_path', type=str, default='output/ckpts/checkpoint-5000'
+        '--ckpt_path', type=str, default='output/ckpts/pytorch_lora_weights.safetensors'
     )
     parser.add_argument(
         '--data_path', type=str, default='examples'
@@ -78,8 +78,21 @@ def main():
         print("***** Try login...")
         login()
 
-    # load accelerate state
+    # 1) load accelerate state
     # NOTE: lora is stored within transformer here,
     # we should either load the transformer to the pipeline or,
     # detach lora from transformer and then set lora to the pipeline.
+    pass
+
+    # 2) load lora safetensors
+    # NOTE: lora is stored individually here,
+    # we can just load the lora and add to the SD3 Pipeline.
+    pipeline = StableDiffusion3Pipeline.from_pretrained(
+        cfg.model.pretrained_model_name_or_path,
+        torch_dtype=torch.float16,
+        cache_dir=cfg.model.cache_dir,
+    )
+    pipeline.load_lora_weights(args.ckpt_path)
+
     
+
