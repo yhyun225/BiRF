@@ -298,6 +298,7 @@ class Trainer(object):
         Save a checkpoint.
         Should be called by main process.
         """
+        # NOTE: no wait_for_everyone() here, you should call it outside of this function if necessary.
         if self.is_master:
             transformer = self.accelerator.unwrap_model(copy.deepcopy(self.transformer)).to('cpu')
             transformer = transformer._orig_model if is_compiled_module(transformer) else transformer
@@ -305,12 +306,9 @@ class Trainer(object):
             transformer_lora_layers = get_peft_model_state_dict(transformer)
         
             StableDiffusion3Pipeline.save_lora_weights(
-                save_directory=self.ckpt_dir,
+                save_directory=os.path.join(self.ckpt_dir, f'checkpoint-{self.global_step}'),
                 transformer_lora_layers=transformer_lora_layers,
             )
-            logger.info("Saved checkpoint.")
-        
-        self.accelerator.wait_for_everyone()
 
     def run(self):
         """
@@ -389,15 +387,20 @@ class Trainer(object):
                     noise = torch.randn_like(model_input)
                     bsz = model_input.shape[0]
 
-                    u = compute_density_for_timestep_sampling(
-                        weighting_scheme=self.cfg.weighting_scheme,
-                        batch_size=bsz,
-                        logit_mean=self.cfg.logit_mean,
-                        logit_std=self.cfg.logit_std,
-                        mode_scale=self.cfg.mode_scale
-                    )
-                    
-                    indices = (u * self.noise_scheduler.config.num_train_timesteps).long()
+                    while True:
+                        u = compute_density_for_timestep_sampling(
+                            weighting_scheme=self.cfg.weighting_scheme,
+                            batch_size=bsz,
+                            logit_mean=self.cfg.logit_mean,
+                            logit_std=self.cfg.logit_std,
+                            mode_scale=self.cfg.mode_scale
+                        )
+                        
+                        indices = (u * self.noise_scheduler.config.num_train_timesteps).long()
+
+                        if (indices < len(self.noise_scheduler.timesteps) - 1).all():
+                            break
+
                     timesteps = self.noise_scheduler.timesteps[indices].to(device=self.device)
 
                     sigmas = get_sigmas(
@@ -441,17 +444,26 @@ class Trainer(object):
                         return_dict=False,
                     )[0]
                     
-                    # NOTE: weighting here or not?
-                    # weighting = compute_loss_weighting_for_sd3(weighting_scheme=self.cfg.weighting_scheme, sigmas=sigmas)
-                    # loss = torch.mean(
-                    #     (weighting.float() * (model_pred.float() - model_pred_next.float()) ** 2).reshape(model_pred.shape[0], -1),
-                    #     1,
-                    # )
-                    loss = torch.mean(
+                    ### FLOW MATCHING LOSS ###
+                    # Preconditioning of the model output
+                    model_pred_next = model_pred_next * (-sigmas) + noisy_model_input_next
+                    target = model_input
+
+                    weighting = compute_loss_weighting_for_sd3(weighting_scheme=self.cfg.weighting_scheme, sigmas=sigmas)
+                    loss_fm = torch.mean(
+                        (weighting.float() * (model_pred_next.float() - target.float()) ** 2).reshape(target.shape[0], -1),
+                        1,
+                    )
+                    loss_fm = loss_fm.mean()
+                    ### FLOW MATCHING LOSS ###
+
+                    loss_bd = torch.mean(
                         ((model_pred.float() - model_pred_next.float()) ** 2).reshape(model_pred.shape[0], -1),
                         1,
                     )
-                    loss = loss.mean()
+                    loss_bd = loss_bd.mean()
+
+                    loss = loss_fm + loss_bd
 
                     self.accelerator.backward(loss)
                     if self.accelerator.sync_gradients:
@@ -468,13 +480,20 @@ class Trainer(object):
                     # progress_bar.update(1)
                     self.global_step += 1
 
-                    logs = {"loss": loss.detach().item(), "lr": self.lr_scheduler.get_last_lr()[0]}
+                    logs = {
+                        "loss": loss.detach().item(),
+                        "loss_bd": loss_bd.detach().item(),
+                        "loss_fm": loss_fm.detach().item(),
+                        "lr": self.lr_scheduler.get_last_lr()[0]
+                    }
 
                     if self.is_master or self.accelerator.distributed_type == DistributedType.DEEPSPEED:
                         if self.global_step % self.i_print == 0:
                             
                             log_msg = f"[{self.global_step}/{self.max_steps}] " \
                                     f"loss: {logs['loss']:.4f}, " \
+                                    f"loss_bd: {logs['loss_bd']:.4f}, " \
+                                    f"loss_fm: {logs['loss_fm']:.4f}, " \
                                     f"lr: {logs['lr']:.6f}, " \
                                     f"Peak Memory: {torch.cuda.max_memory_allocated() / (1024 ** 3):.2f} G, " \
                                     f"ETA: {calculate_eta(iter_start_time, iter_end_time, self.global_step, self.max_steps)}"
@@ -491,12 +510,15 @@ class Trainer(object):
                             save_path = os.path.join(self.ckpt_dir, f'checkpoint-{self.global_step}')
                             self.accelerator.save_state(save_path)
                             logger.info('Saved training states.')
-                            # self.save()
+                            
+                            self.save()
+                            logger.info('Saved checkpoint.')
 
                 if self.global_step >= self.max_steps:
                     break
                 a = int(1.2)
         # save lora layers
+        self.accelerator.wait_for_everyone()
         self.save()
         
         self.accelerator.end_training()
